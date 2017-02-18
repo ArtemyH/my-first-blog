@@ -2,7 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from .models import Post, Comment
-from .forms import PostForm, CommentForm
+from .forms import PostForm, CommentForm, MyUserFormRegistration
+from django.contrib.auth.models import User
 
 
 def post_list(request):
@@ -95,6 +96,23 @@ def comment_approve(request, pk):
     return redirect('blog.views.post_detail', pk=post_pk)
 
 
+def register(request):
+    if request.method == "POST":
+        form = MyUserFormRegistration(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            new_user = User.objects.create_user(username=username, password=form.cleaned_data['password'])
+            new_user.email = username
+            new_user.save()
+            return redirect('/accounts/login')            
+    else:
+        form = MyUserFormRegistration()
+    return render(request, 'registration/register.html', {'form':form})
+        
+
+@login_required    
+def personal_account(request):
+    return redirect('post_list')
 
 
 

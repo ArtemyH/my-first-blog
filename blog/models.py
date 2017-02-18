@@ -36,9 +36,13 @@ class Comment(models.Model):
         return self.text   
     
     
-class MyUser(User):
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, unique=True)
+    
     phone_number = models.CharField(max_length=12)
+    skype = models.CharField(max_length=30, null=True)
+    avatar = models.ImageField(null=True)
     
     def __str__(self):
-        return self.username
+        return self.user.username
 

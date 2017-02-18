@@ -1,0 +1,26 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+    <form method="POST" class="post-form">{% csrf_token %}
+        <table>
+            <tr>
+                <td><p>E-mail</p></td>
+                <td>{{ form.username }}</td>
+                <td><p>{{ form.username.errors }}</p></td>
+            </tr>
+            <tr>
+                <td><p>Пароль</p></td>
+                <td>{{ form.password }}</td>
+                <td><p>{{ form.password.errors }}</p></td>
+            </tr>
+            <tr>
+                <td><p>{{ form.password2.label }}</p></td>
+                <td>{{ form.password2 }}</td>
+                <td><p>{{ form.password2.errors }}</p></td>
+            </tr>
+        </table>
+        
+        <button type="submit" class="button">Регистрация</button>
+        <input type="hidden" name="text" value="{{ next }}"/>
+    </form>
+{% endblock %}
