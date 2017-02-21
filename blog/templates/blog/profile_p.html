@@ -5,8 +5,8 @@
     {% if form.errors %}
     {{ form.errors }}
     {% endif %}
-    <!--<img src="{{ user.extuser.avatar.url }}"/>-->
-    <img src="/home/artemy/django/my-first-blog/media/user_media"/>
+    <img src="{{ user.extuser.avatar.url }}"/>
+    
     
     <form method="POST" class="post-form" enctype="multipart/form-data">{% csrf_token %}
         
