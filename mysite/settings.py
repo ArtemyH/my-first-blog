@@ -110,10 +110,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 AUTHENTICATION_BACKENDS = ['blog.auth_with_email.EmailBackend']
 
-#email must be unique
-#from django.contrib.auth.models import User, models
-#User._meta.local_fields[4].__dict__['_unique'] = True
-
 
 MEDIA_ROOT = os.path.normpath(os.path.join(BASE_DIR, "../media"))
 MEDIA_URL = '/media/'

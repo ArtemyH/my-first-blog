@@ -47,7 +47,6 @@ class ExtUser(User):
     skype = models.CharField(max_length=30, null=True, blank=True)
     avatar = models.ImageField(upload_to='user_media', null=True, blank=True)
     
-    
     USERNAME_FIELD = 'email'
     
     def __str__(self):
