@@ -1,6 +1,16 @@
 from django import forms
-from .models import Post, Comment, UserProfile
+from .models import Post, Comment, ExtUser
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import AuthenticationForm
+
+
+class AuthenticationFormWithEmail(forms.ModelForm):
+    email = forms.CharField(max_length=254, help_text='email')
+    password = forms.CharField(label='Пароль', widget=forms.PasswordInput)
+    
+    class Meta:
+        model = ExtUser
+        fields = ('email', 'password',)
 
 class PostForm(forms.ModelForm):
     
@@ -16,20 +26,20 @@ class CommentForm(forms.ModelForm):
         fields = ('author', 'text',)
         
         
-class MyUserFormRegistration(forms.ModelForm):
+class ExtUserFormRegistration(forms.ModelForm):
     password = forms.CharField(label='Пароль', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Подтвердите пароль', widget=forms.PasswordInput)
     
     class Meta:
-        model = User
-        fields = ('username',)
+        model = ExtUser
+        fields = ('email',)
         
-    def clean_username(self):
-        username = self.cleaned_data['username']
+    def clean_email(self):
+        email = self.cleaned_data['email']
         try: 
-            User.objects.get(username=username)
+            User.objects.get(email=email)
         except User.DoesNotExist:
-            return username
+            return email
         raise forms.ValidationError('Пользователь с таким адресом уже существует.')
         
         
@@ -40,11 +50,15 @@ class MyUserFormRegistration(forms.ModelForm):
         return cd['password2']
     
     
+class ProfileForm(forms.ModelForm):
     
-class UserProfileForm(forms.ModelForm):
     
     class Meta:
-        model = UserProfile
-        fields = ('avatar','phone_number','skype',)
+        model = ExtUser
+        fields = ('first_name', 'last_name', 'avatar', 'email', 'phone_number', 'skype',)
         
+        
+    
+    
+
         

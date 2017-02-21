@@ -1,0 +1,43 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+    <h1>Профиль</h1>
+    {% if form.errors %}
+    {{ form.errors }}
+    {% endif %}
+    <form method="POST" class="post-form">{% csrf_token %}
+        <table>
+            <tr><td><image>{{ image }}</image></td></tr>
+            <tr>
+                <td>{{ form.avatar }}</td>
+                <td><p>{{ form.avatar.errors }}</p></td>
+            </tr>
+            
+            <tr><td><p>Имя</p></td></tr>
+            <tr>
+                <td>{{ form.first_name }}</td>
+                <td><p>{{ form.first_name.errors }}</p></td>
+            </tr>
+            
+            <tr><td><p>Фамилия</p></td></tr>
+            <tr>
+                <td>{{ form.last_name }}</td>
+                <td><p>{{ form.last_name.errors }}</p></td>
+            </tr>
+            
+            <tr><td><p>Email</p></td></tr>
+            <tr>
+                <td>{{ form.email }}</td>
+                <td><p>{{ form.email.errors }}</p></td>
+            </tr>
+            
+            <tr><td><p>Skype</p></td></tr>
+            <tr>
+                <td>{{ form.skype }}</td>
+                <td><p>{{ form.skype.errors }}</p></td>
+            </tr>
+            
+        </table>
+        <button type="submit" class="save btn btn-default">Save</button>
+    </form>
+{% endblock %}

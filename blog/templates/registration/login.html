@@ -2,6 +2,7 @@
 
 {% block content %}
     {% if form.errors %}
+        <p>{{ form.errors }}
         <p>Логин и пароль не подходят. Попробуйте снова</p>
     {% endif %}
     
@@ -10,7 +11,7 @@
         <table>
             <tr>
                 <td><p>E-mail</p></td>
-                <td>{{ form.username }}</td>
+                <td>{{ form.email }}</td>
             </tr>
             <tr>
                 <td><p>Пароль</p></td>

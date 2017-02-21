@@ -1,0 +1,51 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+    <h1>Профиль</h1>
+    {% if form.errors %}
+    {{ form.errors }}
+    {% endif %}
+    <!--<img src="{{ user.extuser.avatar.url }}"/>-->
+    <img src="/home/artemy/django/my-first-blog/media/user_media"/>
+    
+    <form method="POST" class="post-form" enctype="multipart/form-data">{% csrf_token %}
+        
+            
+            
+                <p>{{ form.avatar }} <button type="submit" class="save btn btn-default">Сохранить</button></p>
+                <p>{{ form.avatar.errors }}</p>
+            
+            
+            <p>Имя:</p>
+            
+                <p>{{ form.first_name }}</p>
+                <p>{{ form.first_name.errors }}</p>
+            
+            
+            <p>Фамилия:</p>
+            
+                <p>{{ form.last_name }}</p>
+                <p>{{ form.last_name.errors }}</p>
+            
+            
+            <p>Email:</p>
+            
+                <p>{{ form.email }}</p>
+                <p>{{ form.email.errors }}</p>
+        
+            <p>Телефон:</p>
+
+                    <p>{{ form.phone_number }}</p>
+                    <p>{{ form.phone_number.errors }}</p>
+            
+            
+            <p>Skype:</p>
+            
+                <p>{{ form.skype }}</p>
+                <p>{{ form.skype.errors }}</p>
+            
+            
+       
+        
+    </form>
+{% endblock %}
