@@ -5,8 +5,9 @@
     {% if form.errors %}
     {{ form.errors }}
     {% endif %}
+    {% if user.extuser.avatar.url %}
     <img src="{{ user.extuser.avatar.url }}"/>
-    
+    {% endif %}
     
     <form method="POST" class="post-form" enctype="multipart/form-data">{% csrf_token %}
         
