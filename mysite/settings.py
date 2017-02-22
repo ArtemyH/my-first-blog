@@ -116,11 +116,11 @@ MEDIA_URL = '/media/'
 
 
 EMAIL_HOST = 'smtp.mail.ru'
-EMAIL_HOST_USER = 'prime.95@mail.ru'
-EMAIL_HOST_PASSWORD = 'fuck u'
+EMAIL_HOST_USER = 'my_fire_blog@mail.ru'
+EMAIL_HOST_PASSWORD = 'RiTuuC&1'
 EMAIL_PORT = 2525
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'prime.95@mail.ru'
+DEFAULT_FROM_EMAIL = 'my_fire_blog@mail.ru'
 
 
 

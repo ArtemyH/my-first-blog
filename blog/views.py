@@ -89,9 +89,8 @@ def confirm_account(request, key):
     
 def post_list(request):
     posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')
-    host = request.get_host()
     #form = AuthenticationFormWithEmail()
-    return render(request, 'blog/post_list.html', {'posts':posts, 'host':host})
+    return render(request, 'blog/post_list.html', {'posts':posts})
 
 
 @login_required
@@ -192,8 +191,9 @@ def register(request):
             new_user.save()
             
             # Send email with activation key
+            host = request.get_host()
             email_subject = 'Подтверждение регистрации'
-            email_body = "Hey %s, thanks for signing up. To activate your account, click this link http://127.0.0.1:8000/register/confirm/%s" % (username, new_user.activation_key)
+            email_body = "Hey %s, thanks for signing up. To activate your account, click this link http://%s/register/confirm/%s" % (username, host, new_user.activation_key)
             send_mail(email_subject, email_body, 'prime.95@mail.ru', [email], fail_silently=False)
             
             return redirect('/accounts/login')            
