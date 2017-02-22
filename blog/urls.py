@@ -13,6 +13,7 @@ urlpatterns = [
     url(r'^comment/(?P<pk>\d+)/remove/$', views.comment_remove, name='comment_remove'),
     url(r'^comment/(?P<pk>\d+)/approve/$', views.comment_approve, name='comment_approve'),
     url(r'^register/$', views.register, name='register'),
+    url(r'^register/confirm/(?P<key>.+)/$', views.confirm_account, name='confirm_account'),
     url(r'^user/$', views.PersonalAccount.as_view(), name='profile'),
     #url(r'^accounts/login/$', views.login, name='login'),
     url(r'^accounts/login/$', views.LoginFormView.as_view(), name='login'),

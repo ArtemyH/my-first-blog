@@ -5,8 +5,8 @@
     {% if form.errors %}
     {{ form.errors }}
     {% endif %}
-    {% if user.extuser.avatar.url %}
-    <img src="{{ user.extuser.avatar.url }}"/>
+    {% if user.extuser.avatar %}
+        <img src="{{ user.extuser.avatar.url }}" height="200"/>
     {% endif %}
     
     <form method="POST" class="post-form" enctype="multipart/form-data">{% csrf_token %}
@@ -31,7 +31,7 @@
             
             <p>Email:</p>
             
-                <p>{{ form.email }}</p>
+                <p><input type="text" disabled="disabled" value="{{ user.email }}"/></p>
                 <p>{{ form.email.errors }}</p>
         
             <p>Телефон:</p>

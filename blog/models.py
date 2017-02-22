@@ -18,13 +18,19 @@ class Post(models.Model):
     
     def publish(self):
         self.published_date = timezone.now()
-        self.save()
-        
-    
+        self.save()  
 
     def __str__(self):
         return self.title
     
+    
+class MyPost(models.Model):
+    author = models.ForeignKey('blog.ExtUser')
+    title = models.CharField(max_length=200)
+    description = models.CharField(max_length=300)
+    text = models.TextField()
+    created_date = models.DateTimeField(default=timezone.now)
+    published_date = models.DateTimeField(blank=True, null=True)    
     
 class Comment(models.Model):
     post = models.ForeignKey('blog.Post', related_name='comments')
@@ -46,6 +52,7 @@ class ExtUser(User):
     phone_number = models.CharField(max_length=20, blank=True)
     skype = models.CharField(max_length=30, null=True, blank=True)
     avatar = models.ImageField(upload_to='user_media', null=True, blank=True)
+    activation_key = models.CharField(max_length=40, blank=True)
     
     USERNAME_FIELD = 'email'
     

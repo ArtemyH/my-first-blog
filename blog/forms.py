@@ -56,6 +56,9 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = ExtUser
         fields = ('first_name', 'last_name', 'avatar', 'email', 'phone_number', 'skype',)
+        widgets = {
+            'avatar':forms.FileInput(),
+        }
         
         
     

@@ -10,6 +10,9 @@ from django.views.generic.edit import FormView
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login, authenticate
 
+from django.core.mail import send_mail
+import hashlib, random
+
 
 class LoginFormView(FormView):
     form_class = AuthenticationFormWithEmail
@@ -50,7 +53,7 @@ class PersonalAccount(FormView):
                                     'avatar': user.avatar,
                                     'phone_number': user.phone_number,})
         #form.fields['skype'] = 'cregt'
-        return render(request, 'blog/profile_p.html', {'form':form, 'avatar':user.avatar.url})
+        return render(request, 'blog/profile_p.html', {'form':form})
         
     def post(self, request):
         user = ExtUser.objects.get(email=request.user.email.lower())
@@ -67,17 +70,28 @@ class PersonalAccount(FormView):
             #if user.is_changed():
             user.save()
                 
-        return render(request, 'blog/profile_p.html', {'form':form, 'avatar':user.avatar})
+        return render(request, 'blog/profile_p.html', {'form':form})
         
     
     def form_valid(self, form):
         return super(PersonalAccount, self).form_valid(form)
     
 
+def confirm_account(request, key):
+    if request.user.is_authenticated():
+        return redirect('/')
+    
+    user = get_object_or_404(ExtUser, activation_key=key)
+    user.is_active = True
+    user.save()
+    return redirect('/')
+    
+    
 def post_list(request):
     posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')
+    host = request.get_host()
     #form = AuthenticationFormWithEmail()
-    return render(request, 'blog/post_list.html', {'posts':posts})
+    return render(request, 'blog/post_list.html', {'posts':posts, 'host':host})
 
 
 @login_required
@@ -173,7 +187,15 @@ def register(request):
             username = email.split('@')[0]
             new_user = ExtUser.objects.create_user(username=username, email=email, password=form.cleaned_data['password'])
             #new_user.email = email
+            #new_user.is_active = False
+            new_user.activation_key = hashlib.sha1(email.encode('utf-8')).hexdigest()
             new_user.save()
+            
+            # Send email with activation key
+            email_subject = 'Подтверждение регистрации'
+            email_body = "Hey %s, thanks for signing up. To activate your account, click this link http://127.0.0.1:8000/register/confirm/%s" % (username, new_user.activation_key)
+            send_mail(email_subject, email_body, 'prime.95@mail.ru', [email], fail_silently=False)
+            
             return redirect('/accounts/login')            
     else:
         form = ExtUserFormRegistration()
