@@ -11,6 +11,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login, authenticate
 
 from django.core.mail import send_mail
+from django.conf import settings
 import hashlib, random
 
 
@@ -194,7 +195,7 @@ def register(request):
             host = request.get_host()
             email_subject = 'Подтверждение регистрации'
             email_body = "Hey %s, thanks for signing up. To activate your account, click this link http://%s/register/confirm/%s" % (username, host, new_user.activation_key)
-            send_mail(email_subject, email_body, 'prime.95@mail.ru', [email], fail_silently=False)
+            send_mail(email_subject, email_body, settings.EMAIL_HOST_USER, [email], fail_silently=False)
             
             return redirect('/accounts/login')            
     else:
