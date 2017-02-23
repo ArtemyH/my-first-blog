@@ -1,5 +1,5 @@
 from django import forms
-from .models import Post, Comment, ExtUser
+from .models import * #Post, Comment, ExtUser
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 
@@ -59,6 +59,21 @@ class ProfileForm(forms.ModelForm):
         widgets = {
             'avatar':forms.FileInput(),
         }
+        
+        
+class MyPostForm(forms.ModelForm):
+    
+    class Meta:
+        model = MyPost
+        fields = ('title', 'description', 'text',)
+        #exclude = ('status', )
+        
+        
+class CommentForm(forms.ModelForm):
+    
+    class Meta:
+        model = Comment
+        fields = ('text',)
         
         
     

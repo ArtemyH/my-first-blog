@@ -1,12 +1,13 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from .models import Post, Comment, ExtUser
-from .forms import PostForm, CommentForm, ExtUserFormRegistration, AuthenticationFormWithEmail, ProfileForm
+from .models import * #Post, Comment, ExtUser
+from .forms import * #PostForm, CommentForm, ExtUserFormRegistration, AuthenticationFormWithEmail, ProfileForm
 from django.contrib.auth.models import User
 
 from django import forms
-from django.views.generic.edit import FormView
+from django.views.generic.edit import FormView, CreateView
+from django.views.generic import ListView
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login, authenticate
 
@@ -39,7 +40,7 @@ class LoginFormView(FormView):
 class PersonalAccount(FormView):
     form_class = ProfileForm
     
-    template_name = 'blog/profile_p.html'
+    template_name = 'blog/user_profile_p.html'
     
     success_url = 'profile'
     
@@ -54,7 +55,7 @@ class PersonalAccount(FormView):
                                     'avatar': user.avatar,
                                     'phone_number': user.phone_number,})
         #form.fields['skype'] = 'cregt'
-        return render(request, 'blog/profile_p.html', {'form':form})
+        return render(request, 'blog/user_profile_p.html', {'form':form})
         
     def post(self, request):
         user = ExtUser.objects.get(email=request.user.email.lower())
@@ -71,13 +72,74 @@ class PersonalAccount(FormView):
             #if user.is_changed():
             user.save()
                 
-        return render(request, 'blog/profile_p.html', {'form':form})
+        return render(request, 'blog/user_profile_p.html', {'form':form})
         
     
     def form_valid(self, form):
         return super(PersonalAccount, self).form_valid(form)
     
 
+    
+    
+class UserPostList(ListView):
+    model = MyPost
+    
+    template_name = 'blog/user_post_list.html'
+    
+    def get_queryset(self):
+        user = ExtUser.objects.get(email=self.request.user.email)
+        return MyPost.objects.filter(author=user, status=MyPost.SUCCESSFUL_MODERATION)
+        
+    
+    
+class CreateMyPost(CreateView):
+    form_class = MyPostForm
+    template_name = 'blog/my_post_edit.html'
+    success_url = '/'
+    
+    def send_mail_confirm(self, form):
+        name = self.request.user.first_name
+        email_subject = 'Создана публикация'
+        email_body = "Пользователь %s создал публикацию \"%s\". Необходима модерация" % (name, form.instance.title)
+        recievers = User.objects.filter(is_staff=True).values('email')
+        send_mail(email_subject, email_body, settings.EMAIL_HOST_USER, ['prime.95@mail.ru'], fail_silently=False)
+    
+    def form_valid(self, form):
+        try:
+            form.instance.author = ExtUser.objects.get(email=self.request.user.email)
+        except ExtUser.DoesNotExist:
+            form.instance.author = request.user
+        self.send_mail_confirm(form)
+        return super(CreateMyPost, self).form_valid(form)
+
+
+class CreateComment(CreateView):
+    form_class = CommentForm
+    success_url = '/'
+    template_name = 'blog/add_comment_to_post.html'
+    
+    def form_valid(self, form):
+        #try:
+            #form.instance.author = ExtUser.objects.get(email=self.request.user.email)
+        #except ExtUser.DoesNotExist:
+            #form.instance.author = request.user
+        
+        return super(CreateComment, self).form_valid(form)
+    
+    def post(self, request, pk):
+        post = get_object_or_404(MyPost, pk=pk)
+        form = self.get_form()
+        form.instance.post = post
+        try:
+            form.instance.author = ExtUser.objects.get(email=self.request.user.email)
+        except ExtUser.DoesNotExist:
+            form.instance.author = request.user
+        comment = form.save()
+        return redirect('/')
+        
+    
+        
+    
 def confirm_account(request, key):
     if request.user.is_authenticated():
         return redirect('/')
@@ -89,7 +151,7 @@ def confirm_account(request, key):
     
     
 def post_list(request):
-    posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')
+    posts = MyPost.objects.all() #filter(published_date__lte=timezone.now()).order_by('published_date')
     #form = AuthenticationFormWithEmail()
     return render(request, 'blog/post_list.html', {'posts':posts})
 
@@ -101,8 +163,8 @@ def post_draft_list(request):
 
 
 def post_detail(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    return render(request, 'blog/post_detail.html', {'post':post})
+    post = get_object_or_404(MyPost, pk=pk)
+    return render(request, 'blog/my_post_detail.html', {'post':post})
 
 
 @login_required

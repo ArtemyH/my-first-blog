@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, User
 from django.utils import timezone
 
+from django.core.mail import send_mail
+from django.conf import settings
+
 
 class PostManager(models.Manager):
     def approved_comments(self):
@@ -25,25 +28,55 @@ class Post(models.Model):
     
     
 class MyPost(models.Model):
+    IN_MODERATION = 'IM'
+    SUCCESSFUL_MODERATION = 'SM'
+    REJECTED_MODERATION = 'RM'
+    MODERATION_STATUSES = (
+        (IN_MODERATION, 'In moderation'),
+        (SUCCESSFUL_MODERATION, 'Succesful moderation'),
+        (REJECTED_MODERATION, 'Rejected')
+    )
+    
     author = models.ForeignKey('blog.ExtUser')
     title = models.CharField(max_length=200)
     description = models.CharField(max_length=300)
     text = models.TextField()
     created_date = models.DateTimeField(default=timezone.now)
     published_date = models.DateTimeField(blank=True, null=True)    
+    status = models.CharField(choices=MODERATION_STATUSES, max_length=2, default=IN_MODERATION)
+    rejected_reason = models.TextField(default="")
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.prev_status = self.status
+        
+    def save(self, *args, **kwargs):
+        if self.status != self.REJECTED_MODERATION:
+            self.rejected_reason = ""
+            
+        if self.status != self.prev_status:
+            email = self.author.email
+            name = self.author.first_name
+            
+            if self.status == self.SUCCESSFUL_MODERATION:
+                email_subject = 'Ваша запись опубликована'
+                email_body = "Привет, %s! Ваша запись \"%s\" опубликована." % (name, self.title)
+                send_mail(email_subject, email_body, settings.EMAIL_HOST_USER, [email], fail_silently=False)
+            
+            elif self.status == self.REJECTED_MODERATION:
+                email_subject = 'Ваша запись отклонена'
+                email_body = "Привет, %s! Ваша запись \"%s\" отклонена.\nПричина: %s." % (name, self.title, self.rejected_reason)
+                send_mail(email_subject, email_body, settings.EMAIL_HOST_USER, [email], fail_silently=False)
+                
+        return super().save(*args, **kwargs)
+    
     
 class Comment(models.Model):
-    post = models.ForeignKey('blog.Post', related_name='comments')
-    author = models.CharField(max_length=200)
+    post = models.ForeignKey('blog.MyPost', related_name='comments')
+    author = models.ForeignKey('blog.ExtUser')
     text = models.TextField()
     created_date = models.DateTimeField(default=timezone.now)
-    approved_comment = models.BooleanField(default=False)
     
-    
-    def approve(self):
-        self.approved_comment = True
-        self.save()
-                
     def __str__(self):
         return self.text   
     

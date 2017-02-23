@@ -115,12 +115,15 @@ MEDIA_ROOT = os.path.normpath(os.path.join(BASE_DIR, "../media"))
 MEDIA_URL = '/media/'
 
 
-EMAIL_HOST = 'smtp.mail.ru'
-EMAIL_HOST_USER = 'my_fire_blog@mail.ru'
-EMAIL_HOST_PASSWORD = 'RiTuuC&1'
-EMAIL_PORT = 2525
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "sup.good.blog@gmail.com"
+EMAIL_HOST_PASSWORD = "dJ}b*zxp"
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'my_fire_blog@mail.ru'
+SERVER_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
 
 
 

@@ -1,0 +1,46 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+    <p><a href="{% url 'profile' %}">Профиль</a>
+        <a href="{% url 'user_post_list' %}">Список публикаций</a></p>
+    <h1>Профиль</h1>
+    {% if form.errors %}
+    {{ form.errors }}
+    {% endif %}
+    {% if user.extuser.avatar %}
+        <img src="{{ user.extuser.avatar.url }}" height="200"/>
+    {% endif %}
+    
+    <form method="POST" class="post-form" enctype="multipart/form-data">{% csrf_token %}        
+            
+            
+                <p>{{ form.avatar }} <button type="submit" class="save btn btn-default">Сохранить</button></p>
+                <p>{{ form.avatar.errors }}</p>            
+            
+            <p>Имя:</p>
+            
+                <p>{{ form.first_name }}</p>
+                <p>{{ form.first_name.errors }}</p>            
+            
+            <p>Фамилия:</p>
+            
+                <p>{{ form.last_name }}</p>
+                <p>{{ form.last_name.errors }}</p>            
+            
+            <p>Email:</p>
+            
+                <p><input type="text" disabled="disabled" value="{{ user.email }}"/></p>
+                <p>{{ form.email.errors }}</p>
+        
+            <p>Телефон:</p>
+
+                    <p>{{ form.phone_number }}</p>
+                    <p>{{ form.phone_number.errors }}</p>            
+            
+            <p>Skype:</p>
+            
+                <p>{{ form.skype }}</p>
+                <p>{{ form.skype.errors }}</p>       
+        
+    </form>
+{% endblock %}
