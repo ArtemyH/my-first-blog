@@ -87,6 +87,14 @@ class PersonalAccount(FormView):
         return super(PersonalAccount, self).form_valid(form)
 
 
+class PostList(ListView):
+    model = MyPost
+    
+    template_name = 'blog/post_list.html'
+
+    def get_queryset(self):
+        return MyPost.objects.filter(status=MyPost.SUCCESSFUL_MODERATION)
+
 class UserPostList(ListView):
     model = MyPost
     
