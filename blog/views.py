@@ -7,13 +7,16 @@ from django.contrib.auth.models import User
 
 from django import forms
 from django.views.generic.edit import FormView, CreateView
-from django.views.generic import ListView
+from django.views.generic import ListView, TemplateView
+from django.views.generic.detail import DetailView
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login, authenticate
 
 from django.core.mail import send_mail
 from django.conf import settings
 import hashlib, random
+
+from django.http import HttpResponse
 
 
 class LoginFormView(FormView):
@@ -31,8 +34,13 @@ class LoginFormView(FormView):
             user = authenticate(username=email, password=password)
         except User.MultipleObjectsReturned:
             raise forms.ValidationError('Почта не уникальна.')
+        except Exception:
+            raise forms.ValidationError('Вход не удался.')
         if user is not None:
-            auth_login(self.request, user)            
+            auth_login(self.request, user)
+            return redirect('profile')
+        else:
+            return redirect('login')
                
         return super(LoginFormView, self).form_valid(form)
 
@@ -77,10 +85,8 @@ class PersonalAccount(FormView):
     
     def form_valid(self, form):
         return super(PersonalAccount, self).form_valid(form)
-    
 
-    
-    
+
 class UserPostList(ListView):
     model = MyPost
     
@@ -89,9 +95,20 @@ class UserPostList(ListView):
     def get_queryset(self):
         user = ExtUser.objects.get(email=self.request.user.email)
         return MyPost.objects.filter(author=user, status=MyPost.SUCCESSFUL_MODERATION)
-        
+
+
+class UsersList(ListView):
+    model = ExtUser
     
+    template_name = 'blog/users_list.html'    
+
+
+class UserDetailAndPosts(DetailView):
+    model = ExtUser
     
+    template_name = 'blog/user_detail_and_posts.html'
+
+
 class CreateMyPost(CreateView):
     form_class = MyPostForm
     template_name = 'blog/my_post_edit.html'
@@ -118,13 +135,12 @@ class CreateComment(CreateView):
     success_url = '/'
     template_name = 'blog/add_comment_to_post.html'
     
-    def form_valid(self, form):
+    #def form_valid(self, form):
         #try:
             #form.instance.author = ExtUser.objects.get(email=self.request.user.email)
         #except ExtUser.DoesNotExist:
-            #form.instance.author = request.user
-        
-        return super(CreateComment, self).form_valid(form)
+            #form.instance.author = request.user        
+        #return super(CreateComment, self).form_valid(form)
     
     def post(self, request, pk):
         post = get_object_or_404(MyPost, pk=pk)
@@ -135,11 +151,44 @@ class CreateComment(CreateView):
         except ExtUser.DoesNotExist:
             form.instance.author = request.user
         comment = form.save()
-        return redirect('/')
-        
+        return redirect('post_detail', pk=pk)
+
+
+
+class PlusToPost(TemplateView):
     
-        
+    def get(self, request):
+        if request.is_ajax():
+            post_pk = request.GET['post_pk']
+            post = MyPost.objects.get(pk=post_pk)
+            try:
+                rating = Rating.objects.get(post=post, author=request.user)
+            except Rating.DoesNotExist:
+                rating = Rating.objects.create_rating(request.user, post)
+            rating.add_plus()
+            rating.save()
+            post.count_rate()
+            post.save()
+        return HttpResponse(post.rate)
+
+
+class MinusToPost(TemplateView):
     
+    def get(self, request):
+        if request.is_ajax():
+            post_pk = request.GET['post_pk']
+            post = MyPost.objects.get(pk=post_pk)
+            try:
+                rating = Rating.objects.get(post=post, author=request.user)
+            except Rating.DoesNotExist:
+                rating = Rating.objects.create_rating(request.user, post)
+            rating.add_minus()
+            rating.save()
+            post.count_rate()
+            post.save()
+        return HttpResponse(post.rate)
+
+
 def confirm_account(request, key):
     if request.user.is_authenticated():
         return redirect('/')
@@ -184,12 +233,12 @@ def post_new(request):
 
 @login_required
 def post_edit(request, pk):
-    post = get_object_or_404(Post, pk=pk)
+    post = get_object_or_404(MyPost, pk=pk)
     if request.method == "POST":
         form = PostForm(request.POST, instance=post)
         if form.is_valid():
             post = form.save(commit=False)
-            post.author = request.user
+            #post.author = request.user
             #post.published_date = timezone.now()
             post.save()
             return redirect('blog.views.post_detail', pk=post.pk)
@@ -245,20 +294,22 @@ def register(request):
     if request.method == "POST":
         form = ExtUserFormRegistration(request.POST)
         if form.is_valid():
-            email = form.cleaned_data['email']
+            email = form.cleaned_data['email'].lower()
             username = email.split('@')[0]
             new_user = ExtUser.objects.create_user(username=username, email=email, password=form.cleaned_data['password'])
             #new_user.email = email
-            #new_user.is_active = False
+            new_user.is_active = False
             new_user.activation_key = hashlib.sha1(email.encode('utf-8')).hexdigest()
             new_user.save()
             
-            # Send email with activation key
             host = request.get_host()
             email_subject = 'Подтверждение регистрации'
-            email_body = "Hey %s, thanks for signing up. To activate your account, click this link http://%s/register/confirm/%s" % (username, host, new_user.activation_key)
-            send_mail(email_subject, email_body, settings.EMAIL_HOST_USER, [email], fail_silently=False)
-            
+            email_body = "Здравствуйте %s, Благодарим за регистрацию. Для активации аккаунта перейдите по ссылке  http://%s/register/confirm/%s" % (username, host, new_user.activation_key)
+            try:
+                send_mail(email_subject, email_body, settings.EMAIL_HOST_USER, [email], fail_silently=False)
+            except Exception:
+                nothing = "to do"
+                
             return redirect('/accounts/login')            
     else:
         form = ExtUserFormRegistration()

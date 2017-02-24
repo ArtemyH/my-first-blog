@@ -18,8 +18,12 @@ urlpatterns = [
     url(r'^user/profile/$', views.PersonalAccount.as_view(), name='profile'),
     url(r'^user/posts/$', views.UserPostList.as_view(), name='user_post_list'),
     url(r'^user/post/new/$', views.CreateMyPost.as_view(), name='user_post_new'),
+    url(r'^users_list/$', views.UsersList.as_view(), name='users_list'),
+    url(r'^users_list/profile/(?P<pk>\d+)/$', views.UserDetailAndPosts.as_view(), name='user_detail'),    
     #url(r'^accounts/login/$', views.login, name='login'),
     url(r'^accounts/login/$', views.LoginFormView.as_view(), name='login'),
+    url(r'^post/plus/$', views.PlusToPost.as_view(), name='plus_to_post'),
+    url(r'^post/minus/$', views.MinusToPost.as_view(), name='minus_to_post'),
     
     
 ]

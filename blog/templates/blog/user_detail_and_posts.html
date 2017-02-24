@@ -1,0 +1,56 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+ <h1>Профиль</h1>
+    {% if form.errors %}
+    {{ form.errors }}
+    {% endif %}
+    {% if extuser.avatar %}
+        <img src="{{ object.avatar.url }}" height="200"/>
+    {% endif %}
+
+    <form class="post-form" >         
+                        
+            <p>Имя:</p>
+            
+                <p><input type="text" disabled="disabled" value="{{ object.first_name }}"/></p>
+                            
+            <p>Фамилия:</p>
+            
+                <p><input type="text" disabled="disabled" value="{{ object.last_name }}"/></p>
+                
+            <p>Email:</p>
+            
+                <p><input type="text" disabled="disabled" value="{{ object.email }}"/></p>
+        
+            <p>Телефон:</p>
+
+                <p><input type="text" disabled="disabled" value="{{ object.phone_number }}"/></p>
+                    
+            <p>Skype:</p>
+            
+                <p><input type="text" disabled="disabled" value="{{ object.skype }}"/></p>
+                
+    </form>
+
+<hr>
+<h1>Публикации</h1>
+{% if object.mypost_set.all %}
+{% for post in object.mypost_set.all %}
+    <div class="post">
+        <div class="date">
+            {{ post.published_date }}
+        </div>
+        <h1><a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a></h1>
+        <p>{{ post.description|linebreaksbr }}</p>
+        <a href="{% url 'post_detail' pk=post.pk %}">Comments: {{ post.comments.count }}</a>
+    </div>
+{% endfor %}
+{% else %}
+<p>У этого пользователя пока нет публикаций</p>
+{% endif %}
+
+
+
+
+{% endblock %}

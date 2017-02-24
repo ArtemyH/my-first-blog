@@ -12,6 +12,7 @@ class AuthenticationFormWithEmail(forms.ModelForm):
         model = ExtUser
         fields = ('email', 'password',)
 
+
 class PostForm(forms.ModelForm):
     
     class Meta:
@@ -35,7 +36,7 @@ class ExtUserFormRegistration(forms.ModelForm):
         fields = ('email',)
         
     def clean_email(self):
-        email = self.cleaned_data['email']
+        email = self.cleaned_data['email'].lower()
         try: 
             User.objects.get(email=email)
         except User.DoesNotExist:

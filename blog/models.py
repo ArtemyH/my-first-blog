@@ -44,11 +44,23 @@ class MyPost(models.Model):
     created_date = models.DateTimeField(default=timezone.now)
     published_date = models.DateTimeField(blank=True, null=True)    
     status = models.CharField(choices=MODERATION_STATUSES, max_length=2, default=IN_MODERATION)
-    rejected_reason = models.TextField(default="")
+    rejected_reason = models.TextField(default="", blank=True)
+    rate = models.IntegerField(default=0)
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.prev_status = self.status
+        
+    def __str__(self):
+        return self.title
+    
+    def count_rate(self):
+        marks = Rating.objects.filter(post=self)
+        value = 0
+        for mark in marks:
+            value += mark.value
+        self.rate = value
+            
         
     def save(self, *args, **kwargs):
         if self.status != self.REJECTED_MODERATION:
@@ -91,7 +103,35 @@ class ExtUser(User):
     
     def __str__(self):
         return self.username
+
+
+class RatingManager(models.Manager):
+    def create_rating(self, author, post):
+        mark = self.create(author=author, post=post)
+        return mark
     
+
+class Rating(models.Model):
+    value = models.IntegerField(default=0)
+    post = models.ForeignKey('blog.MyPost')
+    author = models.ForeignKey('auth.User') 
+    
+    objects = RatingManager()
+    
+    def add_plus(self):
+        if self.value < 1:
+            self.value += 1
+        else:
+            self.value = 1
+        
+    def add_minus(self):
+        if self.value > -1:
+            self.value += -1
+        else:
+            self.value = -1
+            
+    def __str__(self):
+        return self.value
     
 """def set_email_as_unique():
     

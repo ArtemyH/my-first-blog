@@ -1,6 +1,8 @@
 {% extends 'blog/base.html' %}
 
 {% block content %}
+ <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>-->
+
     <div class="post">
         {% if post.published_date %}
             <div class="date">
@@ -15,8 +17,39 @@
         <h1>{{ post.title }}</h1>
         <p>{{ post.text|linebreaksbr }}</p>
     </div>
+    {% if user.is_authenticated %}
     {% if user.extuser != post.author %}
+    <a class="btn btn-default" id="plus"><span class="glyphicon glyphicon-thumbs-up"></span></a>
+    <strong id="like_count">{{ post.rate }}</strong>
+    <a class="btn btn-default" id="minus"><span class="glyphicon glyphicon-thumbs-down"></span></a><br/><br/>
+
+        
+    <script>
+       $('#plus').click(function(){
+        var pk;
+        pk = {{ post.pk }};
+        $.get('/post/plus/', {post_pk: pk}, function(data){
+                   $('#like_count').html(data);
+                   //$('#likes').hide();
+        });
+
+    });
+        
+        $('#minus').click(function(){
+        var pk;
+        pk = {{ post.pk }};
+        $.get('/post/minus/', {post_pk: pk}, function(data){
+                   $('#like_count').html(data);
+                   //$('#likes').hide();
+        });
+
+    });
+    </script>
+
+
+    
     <a class="btn btn-default" href="{% url 'add_comment_to_post' pk=post.pk %}">Add comment</a>
+    {% endif %}
     {% endif %}
     <hr>
     {% for comment in post.comments.all %}
