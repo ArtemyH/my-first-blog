@@ -1,0 +1,45 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+    <select id="field" onchange="sort()">
+        <option value="author">Автор</option>
+        <option value="published_date">Дата публикации</option>
+    </select>
+
+    <select id="order" onchange="sort()">
+        <option value="asc">По возрастанию</option>
+        <option value="desc">По убыванию</option>
+    </select>
+    <div class="my_posts">
+    {% for post in object_list %}
+        <div class="post">
+            <div class="date">
+                {{ post.created_date }}
+            </div>
+            <h1><a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a></h1>
+            <p>{{ post.description|linebreaksbr }}</p>
+            <p>Автор: <a href="{% url 'user_detail' pk=post.author.pk %}">{{ post.author.username }}</a></p>
+        </div>
+    {% endfor %}
+    </div>
+<script>
+    function sort(){
+        var field = $("#field").val();
+        var order = $("#order").val();
+      $.get('/sort/', {field: field, order: order}, function(data){
+          $('.my_posts').empty();
+          $.each(data, function(key, value){
+              
+              var fields = value['fields'];
+              
+              $('.my_posts').append('<div class="post"> <div class="date">' + fields['created_date'] + '</div>' +
+                                    '<h1><a href="post/' + value['pk'] + '/">' + fields['title'] + '<a></h1>' +
+                                    '<p>' + fields['description'] + '</p>' +
+                                    '<p>Автор: <a href="users_list/profile/' + fields['author'] + '/">' + fields['author'] + '</a></p>' +
+                                    '</div>');
+              });
+          }, "json")
+    };
+    
+</script>
+{% endblock %}

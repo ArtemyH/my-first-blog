@@ -53,21 +53,37 @@ class ExtUserFormRegistration(forms.ModelForm):
     
 class ProfileForm(forms.ModelForm):
     
-    
     class Meta:
         model = ExtUser
         fields = ('first_name', 'last_name', 'avatar', 'email', 'phone_number', 'skype',)
+        labels = {
+            'first_name': 'Имя', 
+            'last_name': 'Фамилия', 
+            'avatar': 'Аватар', 
+            'email': 'Email', 
+            'phone_number': 'Телефон', 
+            'skype': 'Skype'
+        }
         widgets = {
             'avatar':forms.FileInput(),
+            'email': forms.TextInput(attrs={
+                'readonly': 'readonly'
+            }
+            )
         }
         
-        
+
 class MyPostForm(forms.ModelForm):
     
     class Meta:
         model = MyPost
-        fields = ('title', 'description', 'text',)
-        #exclude = ('status', )
+        fields = ('title', 'description', 'category', 'text')
+        labels = {
+            'title': 'Заголовок',
+            'description': 'Описание',
+            'category': 'Категория', 
+            'text': 'Текст публикации'
+        }
         
         
 class CommentForm(forms.ModelForm):
@@ -76,6 +92,8 @@ class CommentForm(forms.ModelForm):
         model = Comment
         fields = ('text',)
         
+
+
         
     
     

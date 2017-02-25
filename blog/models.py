@@ -25,7 +25,12 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
-    
+
+
+class MyPostManager(models.Manager):
+    def get_published_posts(self):
+        return super(MyPostManager, self).get_queryset().filter(status=MyPost.SUCCESSFUL_MODERATION)
+
     
 class MyPost(models.Model):
     IN_MODERATION = 'IM'
@@ -40,12 +45,15 @@ class MyPost(models.Model):
     author = models.ForeignKey('blog.ExtUser')
     title = models.CharField(max_length=200)
     description = models.CharField(max_length=300)
+    category = models.ForeignKey('blog.Category', null=True)
     text = models.TextField()
     created_date = models.DateTimeField(default=timezone.now)
     published_date = models.DateTimeField(blank=True, null=True)    
     status = models.CharField(choices=MODERATION_STATUSES, max_length=2, default=IN_MODERATION)
     rejected_reason = models.TextField(default="", blank=True)
     rate = models.IntegerField(default=0)
+    
+    objects = MyPostManager()
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -71,6 +79,7 @@ class MyPost(models.Model):
             name = self.author.first_name
             
             if self.status == self.SUCCESSFUL_MODERATION:
+                self.published_date = timezone.now()
                 email_subject = 'Ваша запись опубликована'
                 email_body = "Привет, %s! Ваша запись \"%s\" опубликована." % (name, self.title)
                 send_mail(email_subject, email_body, settings.EMAIL_HOST_USER, [email], fail_silently=False)
@@ -132,6 +141,14 @@ class Rating(models.Model):
             
     def __str__(self):
         return self.value
+
+
+class Category(models.Model):
+    title = models.CharField(max_length=30)
+    
+    def __str__(self):
+        return self.title
+    
     
 """def set_email_as_unique():
     

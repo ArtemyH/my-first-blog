@@ -1,7 +1,12 @@
 {% extends 'blog/base.html' %}
+{% load staticfiles %}
 
 {% block content %}
- <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>-->
+
+<script>
+     var pk='{{post.pk}}';
+</script>
+<script src="{% static 'js/rating.js' %}"></script>
 
     <div class="post">
         {% if post.published_date %}
@@ -15,38 +20,15 @@
             <a class="btn btn-default" href="{% url 'post_remove' pk=post.pk %}"><span class="glyphicon glyphicon-remove"></span></a>
         {% endif %}
         <h1>{{ post.title }}</h1>
+        <p>{{ post.category.title }}</p>
         <p>{{ post.text|linebreaksbr }}</p>
     </div>
     {% if user.is_authenticated %}
     {% if user.extuser != post.author %}
-    <a class="btn btn-default" id="plus"><span class="glyphicon glyphicon-thumbs-up"></span></a>
-    <strong id="like_count">{{ post.rate }}</strong>
-    <a class="btn btn-default" id="minus"><span class="glyphicon glyphicon-thumbs-down"></span></a><br/><br/>
-
-        
-    <script>
-       $('#plus').click(function(){
-        var pk;
-        pk = {{ post.pk }};
-        $.get('/post/plus/', {post_pk: pk}, function(data){
-                   $('#like_count').html(data);
-                   //$('#likes').hide();
-        });
-
-    });
-        
-        $('#minus').click(function(){
-        var pk;
-        pk = {{ post.pk }};
-        $.get('/post/minus/', {post_pk: pk}, function(data){
-                   $('#like_count').html(data);
-                   //$('#likes').hide();
-        });
-
-    });
-    </script>
-
-
+    
+    <a class="btn btn-default" onclick="plus()" id="plus"><span class="glyphicon glyphicon-thumbs-up"></span></a>
+    <strong id="rate_count">{{ post.rate }}</strong>
+    <a class="btn btn-default" onclick ="minus()" id="minus"><span class="glyphicon glyphicon-thumbs-down"></span></a><br/><br/>
     
     <a class="btn btn-default" href="{% url 'add_comment_to_post' pk=post.pk %}">Add comment</a>
     {% endif %}
@@ -63,4 +45,5 @@
     {% empty %}
         <p>К этой записи нет комментариев</p>
     {% endfor %}
+
 {% endblock %}

@@ -6,7 +6,7 @@ from .forms import * #PostForm, CommentForm, ExtUserFormRegistration, Authentica
 from django.contrib.auth.models import User
 
 from django import forms
-from django.views.generic.edit import FormView, CreateView
+from django.views.generic.edit import FormView, CreateView, UpdateView
 from django.views.generic import ListView, TemplateView
 from django.views.generic.detail import DetailView
 from django.contrib.auth.forms import AuthenticationForm
@@ -17,7 +17,8 @@ from django.conf import settings
 import hashlib, random
 
 from django.http import HttpResponse
-
+from django.core.urlresolvers import reverse
+from django.core import serializers
 
 class LoginFormView(FormView):
     form_class = AuthenticationFormWithEmail
@@ -38,62 +39,31 @@ class LoginFormView(FormView):
             raise forms.ValidationError('Вход не удался.')
         if user is not None:
             auth_login(self.request, user)
-            return redirect('profile')
+            return redirect('profile', pk=user.pk)
         else:
             return redirect('login')
                
         return super(LoginFormView, self).form_valid(form)
 
 
-class PersonalAccount(FormView):
+
+class EditProfile(UpdateView):
+    model = ExtUser
     form_class = ProfileForm
-    
     template_name = 'blog/user_profile_p.html'
     
-    success_url = 'profile'
+    def get_success_url(self):
+        return reverse('profile', args=[self.object.pk])
     
-    
-    #@login_required
-    def get(self, request):
-        user = ExtUser.objects.get(email=request.user.email.lower())
-        form = ProfileForm(initial={'first_name': user.first_name, 
-                                    'last_name': user.last_name, 
-                                    'email': user.email,
-                                    'skype': user.skype,
-                                    'avatar': user.avatar,
-                                    'phone_number': user.phone_number,})
-        #form.fields['skype'] = 'cregt'
-        return render(request, 'blog/user_profile_p.html', {'form':form})
-        
-    def post(self, request):
-        user = ExtUser.objects.get(email=request.user.email.lower())
-        form = ProfileForm(request.POST, request.FILES)
-        
-        if form.is_valid():
-            cd = form.cleaned_data
-            user.first_name = cd['first_name'] 
-            user.last_name = cd['last_name'] 
-            user.skype = cd['skype'] 
-            user.phone_number = cd['phone_number'] 
-            user.avatar = cd['avatar']
-            #user.avatar.save('avatar.jpg', form.avatar)
-            #if user.is_changed():
-            user.save()
-                
-        return render(request, 'blog/user_profile_p.html', {'form':form})
-        
-    
-    def form_valid(self, form):
-        return super(PersonalAccount, self).form_valid(form)
 
 
 class PostList(ListView):
     model = MyPost
     
-    template_name = 'blog/post_list.html'
+    template_name = 'blog/post_list_sort.html'
 
     def get_queryset(self):
-        return MyPost.objects.filter(status=MyPost.SUCCESSFUL_MODERATION)
+        return MyPost.objects.get_published_posts()#filter(status=MyPost.SUCCESSFUL_MODERATION)
 
 class UserPostList(ListView):
     model = MyPost
@@ -102,7 +72,7 @@ class UserPostList(ListView):
     
     def get_queryset(self):
         user = ExtUser.objects.get(email=self.request.user.email)
-        return MyPost.objects.filter(author=user, status=MyPost.SUCCESSFUL_MODERATION)
+        return MyPost.objects.get_published_posts().filter(author=user)
 
 
 class UsersList(ListView):
@@ -125,7 +95,7 @@ class CreateMyPost(CreateView):
     def send_mail_confirm(self, form):
         name = self.request.user.first_name
         email_subject = 'Создана публикация'
-        email_body = "Пользователь %s создал публикацию \"%s\". Необходима модерация" % (name, form.instance.title)
+        email_body = "Пользователь %s создал публикацию \"%s\". Необходима модерация." % (name, form.instance.title)
         recievers = User.objects.filter(is_staff=True).values('email')
         send_mail(email_subject, email_body, settings.EMAIL_HOST_USER, ['prime.95@mail.ru'], fail_silently=False)
     
@@ -138,17 +108,16 @@ class CreateMyPost(CreateView):
         return super(CreateMyPost, self).form_valid(form)
 
 
+class DetailMyPost(DetailView):
+    model = MyPost
+    template_name = 'blog/my_post_detail.html'
+    context_object_name = 'post'
+
+
 class CreateComment(CreateView):
     form_class = CommentForm
     success_url = '/'
     template_name = 'blog/add_comment_to_post.html'
-    
-    #def form_valid(self, form):
-        #try:
-            #form.instance.author = ExtUser.objects.get(email=self.request.user.email)
-        #except ExtUser.DoesNotExist:
-            #form.instance.author = request.user        
-        #return super(CreateComment, self).form_valid(form)
     
     def post(self, request, pk):
         post = get_object_or_404(MyPost, pk=pk)
@@ -197,6 +166,20 @@ class MinusToPost(TemplateView):
         return HttpResponse(post.rate)
 
 
+def post_list_sort(request):
+    queryset = MyPost.objects.get_published_posts()
+    if request.is_ajax():
+        field = request.GET['field']
+        order = request.GET['order']
+        if order == 'asc':
+            queryset = MyPost.objects.get_published_posts().order_by('author')
+        elif order == 'desc':
+            queryset = MyPost.objects.get_published_posts().order_by('-author')
+            
+    sd = serializers.serialize('json', queryset, fields=('author', 'title', 'created_date', 'description'))
+    return HttpResponse(sd)
+
+
 def confirm_account(request, key):
     if request.user.is_authenticated():
         return redirect('/')
@@ -207,23 +190,6 @@ def confirm_account(request, key):
     return redirect('/')
     
     
-def post_list(request):
-    posts = MyPost.objects.all() #filter(published_date__lte=timezone.now()).order_by('published_date')
-    #form = AuthenticationFormWithEmail()
-    return render(request, 'blog/post_list.html', {'posts':posts})
-
-
-@login_required
-def post_draft_list(request):
-    posts = Post.objects.filter(published_date__isnull=True).order_by('created_date')
-    return render(request, 'blog/post_draft_list.html', {'posts':posts})
-
-
-def post_detail(request, pk):
-    post = get_object_or_404(MyPost, pk=pk)
-    return render(request, 'blog/my_post_detail.html', {'post':post})
-
-
 @login_required
 def post_new(request):
     if request.method == "POST":
@@ -255,12 +221,6 @@ def post_edit(request, pk):
     return render(request, 'blog/post_edit.html', {'form':form})
 
 
-@login_required
-def post_publish(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    post.publish()
-    return render(request, 'blog/post_detail.html', {'post':post})
-
 
 @login_required
 def post_remove(request, pk):
@@ -268,18 +228,6 @@ def post_remove(request, pk):
     post.delete()
     return redirect('post_list')
 
-def add_comment_to_post(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    if request.method == "POST":
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.post = post
-            comment.save()
-            return redirect('blog.views.post_detail', pk=post.pk)
-    else:
-        form = CommentForm()
-    return render(request, 'blog/add_comment_to_post.html', {'form':form})
 
 
 @login_required
@@ -289,13 +237,6 @@ def comment_remove(requst, pk):
     comment.delete()
     return redirect('blog.views.post_detail', pk=post_pk)
 
-
-@login_required
-def comment_approve(request, pk):
-    comment = get_object_or_404(Comment, pk=pk)
-    comment.approve()
-    post_pk = comment.post.pk
-    return redirect('blog.views.post_detail', pk=post_pk)
 
 
 def register(request):
@@ -324,10 +265,6 @@ def register(request):
     return render(request, 'registration/register.html', {'form':form})
 
 
-
-@login_required    
-def personal_account(request):
-    return redirect('post_list')
 
 
 

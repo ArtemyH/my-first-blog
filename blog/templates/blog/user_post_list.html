@@ -1,7 +1,7 @@
 {% extends 'blog/base.html' %}
 
 {% block content %}
-        <p><a href="{% url 'profile' %}">Профиль</a>
+        <p><a href="{% url 'profile' pk=user.extuser.pk%}">Профиль</a>
         <a href="{% url 'user_post_list' %}">Список публикаций</a></p>
     <h1>Список публикаций</h1>
     <p><a href="{% url 'user_post_new' %}">Создать публикацию</a></p>
