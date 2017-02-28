@@ -16,9 +16,11 @@ from django.core.mail import send_mail
 from django.conf import settings
 import hashlib, random
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.core.urlresolvers import reverse
 from django.core import serializers
+import json
+from django.core.serializers.json import DjangoJSONEncoder
 
 class LoginFormView(FormView):
     form_class = AuthenticationFormWithEmail
@@ -63,7 +65,7 @@ class PostList(ListView):
     template_name = 'blog/post_list_sort.html'
 
     def get_queryset(self):
-        return MyPost.objects.get_published_posts()#filter(status=MyPost.SUCCESSFUL_MODERATION)
+        return MyPost.objects.get_published_posts()
 
 class UserPostList(ListView):
     model = MyPost
@@ -100,6 +102,10 @@ class CreateMyPost(CreateView):
         send_mail(email_subject, email_body, settings.EMAIL_HOST_USER, ['prime.95@mail.ru'], fail_silently=False)
     
     def form_valid(self, form):
+        #obj = json.dumps((MyPost.objects.all().values('title', 'author__username')))
+        #obj = serializers.serialize((MyPost.objects.all().values('title', 'author__username')))
+        sd = json.dumps(list(MyPost.objects.all().values('title', 'author__username')), cls=DjangoJSONEncoder)
+        print(sd)
         try:
             form.instance.author = ExtUser.objects.get(email=self.request.user.email)
         except ExtUser.DoesNotExist:
@@ -167,17 +173,31 @@ class MinusToPost(TemplateView):
 
 
 def post_list_sort(request):
-    queryset = MyPost.objects.get_published_posts()
+    #queryset = MyPost.objects.get_published_posts()
     if request.is_ajax():
         field = request.GET['field']
         order = request.GET['order']
-        if order == 'asc':
-            queryset = MyPost.objects.get_published_posts().order_by('author')
-        elif order == 'desc':
-            queryset = MyPost.objects.get_published_posts().order_by('-author')
-            
-    sd = serializers.serialize('json', queryset, fields=('author', 'title', 'created_date', 'description'))
-    return HttpResponse(sd)
+        if field == 'author':
+            if order == 'asc':
+                queryset = MyPost.objects.get_published_posts().order_by('author__username').values(
+                    'pk', 'author', 'author__username', 'title', 'published_date', 'description')
+            elif order == 'desc':
+                queryset = MyPost.objects.get_published_posts().order_by('-author__username').values(
+                    'pk', 'author', 'author__username', 'title', 'published_date', 'description')
+        elif field == 'published_date':
+            if order == 'asc':
+                queryset = MyPost.objects.get_published_posts().order_by('published_date').values(
+                    'pk', 'author', 'author__username', 'title', 'published_date', 'description')
+            elif order == 'desc':
+                queryset = MyPost.objects.get_published_posts().order_by('-published_date').values(
+                    'pk', 'author', 'author__username', 'title', 'published_date', 'description')
+    
+    sd = json.dumps(list(queryset), cls=DjangoJSONEncoder)
+    
+    return JsonResponse(sd, safe=False)
+    
+        
+    
 
 
 def confirm_account(request, key):

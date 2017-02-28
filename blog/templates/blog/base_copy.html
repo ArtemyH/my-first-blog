@@ -1,0 +1,62 @@
+{% load staticfiles %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Блогие дела</title>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Lobster&subset=latin,cyrillic" rel="stylesheet" type="text/css">
+    
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/blog.css' %}">
+    
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    
+    
+</head>
+<body>
+    <div class="page-header">
+        {% if user.is_authenticated %}
+            
+            <p class="top-menu-auth">Привет, 
+                {% if user.extuser %}
+                    <a href="{% url 'profile' pk=user.extuser.pk %}">{{ user.username }}</a>
+                {% else %}
+                    <a href="{% url 'profile' pk=user.pk %}">{{ user.username }}</a>
+                {% endif %}
+                
+                <small>(<a href="{% url 'logout' %}"> Выход </a>)</small>
+            </p>
+        
+            <a class="top-menu-auth" href="{% url 'users_list' %}" class="top-menu">Список пользователей</a>
+            
+                
+        {% else %}
+            
+            <form method="POST" class="navbar-form pull-right" action="{% url 'login' %}">
+              {% csrf_token %}
+              <input class="span2" placeholder="email" type="text" name='email'>
+              <input class="span2" placeholder="password" type="password" name="password">
+              <button type="submit" class="btn">Войти</button>
+            </form>
+            <a href="{% url 'register' %}" class="top-menu-auth">Регистрация</a>
+            <!--<a href="{% url 'login' %}" class="top-menu-auth">Авторизация</a>-->           
+        {% endif %}
+        <h1><a href="{% url 'post_list' %}">БЛОГие дела</a> </h1>
+    </div>
+    <div class="content container">
+        <div class="row">
+            <div class="col-md-8">
+                
+                {% block content %}
+				{% endblock %}
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

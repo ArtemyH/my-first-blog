@@ -45,7 +45,7 @@ class MyPost(models.Model):
     author = models.ForeignKey('blog.ExtUser')
     title = models.CharField(max_length=200)
     description = models.CharField(max_length=300)
-    category = models.ForeignKey('blog.Category', null=True)
+    category = models.ForeignKey('blog.Category', null=True, blank=True)
     text = models.TextField()
     created_date = models.DateTimeField(default=timezone.now)
     published_date = models.DateTimeField(blank=True, null=True)    
@@ -79,6 +79,7 @@ class MyPost(models.Model):
             name = self.author.first_name
             
             if self.status == self.SUCCESSFUL_MODERATION:
+                #устанавливаем дату публикации
                 self.published_date = timezone.now()
                 email_subject = 'Ваша запись опубликована'
                 email_body = "Привет, %s! Ваша запись \"%s\" опубликована." % (name, self.title)

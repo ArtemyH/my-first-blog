@@ -1,10 +1,13 @@
 {% extends 'blog/base.html' %}
 
 {% block content %}
+<dl>
 {% for extuser in object_list %}
 
-<a href="{% url 'user_detail' pk=extuser.pk %}">{{ extuser.username }}</a>
-<p>{{ extuser.first_name}} {{ extuser.last_name }}</p>
+    <dt><h4><a class="text-left" href="{% url 'user_detail' pk=extuser.pk %}">{{ extuser.username }}</a></h4></dt>
+    <dd><p class="text-left">  {{ extuser.first_name}} {{ extuser.last_name }}</p></dd>
+    <hr>
 
 {% endfor %}
+</dl>
 {% endblock %}
