@@ -1,13 +1,16 @@
 {% extends 'blog/base.html' %}
 
 {% block content %}
-<dl>
+<div class="row">
+    <div class="col-md-10 col-md-offset-1">
 {% for extuser in object_list %}
 
-    <dt><h4><a class="text-left" href="{% url 'user_detail' pk=extuser.pk %}">{{ extuser.username }}</a></h4></dt>
-    <dd><p class="text-left">  {{ extuser.first_name}} {{ extuser.last_name }}</p></dd>
+    <h4><a class="text-left" href="{% url 'user_detail' pk=extuser.pk %}">{{ extuser.username }}</a></h4>
+    <p class="text-left">  {{ extuser.first_name}} {{ extuser.last_name }}</p>
     <hr>
 
 {% endfor %}
-</dl>
+    </div>
+    </div>
+
 {% endblock %}

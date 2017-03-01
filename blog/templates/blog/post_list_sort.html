@@ -2,33 +2,46 @@
 {% load staticfiles %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-5 col-sm-5 col-xs-6">
+<!--<div class="container">
+    
+<!--</div>-->
+<div class="row">
+    <div class="col-md-8 col-md-offset-1">
+        <div class="row">
+        <div class="col-md-4 col-sm-4">
         <select class="form-control" type="text" id="field" onchange="sort()">
             <option value="published_date">Дата публикации</option>
             <option value="author">Автор</option>        
         </select>
         </div>
-        <div class="col-md-5 col-sm-5 col-xs-6">
+        <div class="col-md-4 col-sm-4">
         <select class="form-control" type="text" id="order" onchange="sort()">
             <option value="desc">По убыванию</option>
             <option value="asc">По возрастанию</option>        
         </select>  
         </div>
     </div>
-</div>
     <div class="my_posts">
-    <!--{% for post in object_list %}
-        <div class="post">
-            <div class="date">
-                {{ post.created_date }}
-            </div>
-            <h1><a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a></h1>
-            <p>{{ post.description|linebreaksbr }}</p>
-            <p>Автор: <a href="{% url 'user_detail' pk=post.author.pk %}">{{ post.author.username }}</a></p>
+    
         </div>
-    {% endfor %}-->
     </div>
+    <div class="col-md-2 col-md-offset-1" >
+        <div > <!--style="position: fixed;"-->
+                                
+          <ul class="sidebar nav nav-pills nav-stacked">
+            <li class="nav-item" ><a class="nav-link"  href="#-1">Все категории</a></li>
+            
+            {% for category in object_list %}
+              <li class="nav-item"><a class="nav-link"  href="#{{ category.pk }}">{{ category.title }}</a></li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+<script>
+    
+</script>
+    
+<!--</div>-->
 <script src="{% static 'js/sort_post.js' %}"></script>
 {% endblock %}

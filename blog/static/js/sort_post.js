@@ -1,7 +1,13 @@
-function sort(){
+function sort(cat){
         var field = $("#field").val();
         var order = $("#order").val();
-      $.get('/sort/', {field: field, order: order}, function(data){
+        var category = cat;
+        if (cat == undefined){
+            var category = window.location.href;
+            //alert('cat ' + window.location.href);
+        }
+        
+      $.get('/sort/', {field: field, order: order, category: category}, function(data){
           var json_data = JSON.parse(data)
           
           var formatter = new Intl.DateTimeFormat("en", {
@@ -28,5 +34,33 @@ function sort(){
            )
     };
     
+
+    function set_active_nav_link(){
+        $('.nav-link').each(function(){
+            //alert($(this).attr('href') + '  ==  ' + window.location.href);
+               if ('http://127.0.0.1:8000/'+$(this).attr('href') == window.location.href){                    
+                   $(this).parent().addClass('active'); 
+               } else {
+                   $(this).parent().removeClass('active');
+               };
+           });        
+    };
+
     $(document).ready(sort());
+    $(document).ready(set_active_nav_link());
+
+    $(document).ready(function(){
+        
+        
+       $('.nav-link').click(function(){
+           $('.nav-link').each(function(){
+               $(this).parent().removeClass('active');
+           });                  
+           
+           $('.data-category').data['cat'] = this;
+           $(this).parent().addClass('active');
+           sort(this.href);
+       });
+    });
+    
     

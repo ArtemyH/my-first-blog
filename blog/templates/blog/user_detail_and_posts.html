@@ -1,6 +1,8 @@
 {% extends 'blog/base.html' %}
 
 {% block content %}
+<div class="row">
+    <div class="col-md-6 col-md-offset-1">
  <h1>Профиль</h1>
     {% if form.errors %}
     {{ form.errors }}
@@ -32,7 +34,10 @@
                 <p><input type="text" disabled="disabled" value="{{ object.skype }}"/></p>
                 
     </form>
-
+    </div>
+    </div>
+<div class="row">
+    <div class="col-md-8 col-md-offset-1">
 <hr>
 <h1>Публикации</h1>
 {% if object.mypost_set.all %}
@@ -50,6 +55,8 @@
 <p>У этого пользователя пока нет публикаций</p>
 {% endif %}
 
+</div>
+</div>
 
 
 

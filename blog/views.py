@@ -60,12 +60,13 @@ class EditProfile(UpdateView):
 
 
 class PostList(ListView):
-    model = MyPost
+    model = Category
     
     template_name = 'blog/post_list_sort.html'
 
     def get_queryset(self):
-        return MyPost.objects.get_published_posts()
+        
+        return Category.objects.all()
 
 class UserPostList(ListView):
     model = MyPost
@@ -173,23 +174,35 @@ class MinusToPost(TemplateView):
 
 
 def post_list_sort(request):
-    #queryset = MyPost.objects.get_published_posts()
+    #print(hello)    
     if request.is_ajax():
         field = request.GET['field']
         order = request.GET['order']
+        
+        #print(category)
+        try:
+            category = request.GET['category'].split('#')[1]
+        except IndexError:
+            category = '-1'
+            
+        if category!='-1':
+            queryset = MyPost.objects.get_published_posts().filter(category__pk=category)
+        else:
+            queryset = MyPost.objects.get_published_posts()
+        
         if field == 'author':
             if order == 'asc':
-                queryset = MyPost.objects.get_published_posts().order_by('author__username').values(
+                queryset = queryset.order_by('author__username').values(
                     'pk', 'author', 'author__username', 'title', 'published_date', 'description')
             elif order == 'desc':
-                queryset = MyPost.objects.get_published_posts().order_by('-author__username').values(
+                queryset = queryset.order_by('-author__username').values(
                     'pk', 'author', 'author__username', 'title', 'published_date', 'description')
         elif field == 'published_date':
             if order == 'asc':
-                queryset = MyPost.objects.get_published_posts().order_by('published_date').values(
+                queryset = queryset.order_by('published_date').values(
                     'pk', 'author', 'author__username', 'title', 'published_date', 'description')
             elif order == 'desc':
-                queryset = MyPost.objects.get_published_posts().order_by('-published_date').values(
+                queryset = queryset.order_by('-published_date').values(
                     'pk', 'author', 'author__username', 'title', 'published_date', 'description')
     
     sd = json.dumps(list(queryset), cls=DjangoJSONEncoder)
