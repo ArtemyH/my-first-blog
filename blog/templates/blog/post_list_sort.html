@@ -7,6 +7,18 @@
 <!--</div>-->
 <div class="row">
     <div class="col-md-8 col-md-offset-1">
+        <!--<div class="row">
+            <div class="col-md-8 col-sm-8">
+                <li><form role="search" class="navbar-form pull-right form-inline">
+                  
+                    <input name="search" type="text" class="span2" placeholder="Поиск">
+                        <button class="btn btn-info" type="button">
+                          <i class="glyphicon glyphicon-search"></i>
+                        </button>
+                  
+                 </form></li>
+            </div>
+        </div>-->
         <div class="row">
         <div class="col-md-4 col-sm-4">
         <select class="form-control" type="text" id="field" onchange="sort()">
@@ -29,7 +41,7 @@
         <div > <!--style="position: fixed;"-->
                                 
           <ul class="sidebar nav nav-pills nav-stacked">
-            <li class="nav-item" ><a class="nav-link"  href="#-1">Все категории</a></li>
+            <li class="nav-item active" ><a class="nav-link"  href="#-1">Все категории</a></li>
             
             {% for category in object_list %}
               <li class="nav-item"><a class="nav-link"  href="#{{ category.pk }}">{{ category.title }}</a></li>

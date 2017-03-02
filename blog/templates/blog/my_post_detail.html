@@ -27,7 +27,7 @@
     <strong id="rate_count">{{ post.rate }}</strong>
     <a class="btn btn-default" onclick ="minus()" id="minus"><span class="glyphicon glyphicon-thumbs-down"></span></a><br/><br/>
     
-    <a class="btn btn-default" href="{% url 'add_comment_to_post' pk=post.pk %}">Add comment</a>
+    <a class="btn btn-default" href="{% url 'add_comment_to_post' pk=post.pk %}">Комментировать</a>
     {% endif %}
     {% endif %}
     <hr>

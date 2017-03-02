@@ -15,7 +15,7 @@
 }
 
 h1, h2, h3, h4 {
-    font-family: 'Lobster', cursive;
+    /*font-family: 'Lobster', cursive;*/
 }
 
 .date {
@@ -44,7 +44,7 @@ h1, h2, h3, h4 {
     font-size: 14pt;
     margin-right: 20px;
     margin-top: 40px;
-    font-family: 'Lobster', cursive;
+    /*font-family: 'Lobster', cursive;*/
 }
 
 .post {
@@ -61,5 +61,9 @@ h1, h2, h3, h4 {
 
 .button {
     margin: 20px 0px 0px 0px;
+}
+
+.navbar-right{
+    padding-right: 20px;
 }
     

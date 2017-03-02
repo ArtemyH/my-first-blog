@@ -22,6 +22,9 @@ from django.core import serializers
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 
+from django.db.models import Q
+
+
 class LoginFormView(FormView):
     form_class = AuthenticationFormWithEmail
     
@@ -56,17 +59,22 @@ class EditProfile(UpdateView):
     
     def get_success_url(self):
         return reverse('profile', args=[self.object.pk])
+
+
+class EditPost(UpdateView):
+    model = MyPost
+    form_class = MyPostForm
+    template_name = 'blog/my_post_edit.html'
+    
+    def get_success_url(self):
+        return reverse('post_detail', args=[self.object.pk])
     
 
 
 class PostList(ListView):
-    model = Category
-    
+    model = Category    
     template_name = 'blog/post_list_sort.html'
 
-    def get_queryset(self):
-        
-        return Category.objects.all()
 
 class UserPostList(ListView):
     model = MyPost
@@ -93,7 +101,7 @@ class UserDetailAndPosts(DetailView):
 class CreateMyPost(CreateView):
     form_class = MyPostForm
     template_name = 'blog/my_post_edit.html'
-    success_url = '/'
+    #success_url = 'user_post_list'
     
     def send_mail_confirm(self, form):
         name = self.request.user.first_name
@@ -103,10 +111,6 @@ class CreateMyPost(CreateView):
         send_mail(email_subject, email_body, settings.EMAIL_HOST_USER, ['prime.95@mail.ru'], fail_silently=False)
     
     def form_valid(self, form):
-        #obj = json.dumps((MyPost.objects.all().values('title', 'author__username')))
-        #obj = serializers.serialize((MyPost.objects.all().values('title', 'author__username')))
-        sd = json.dumps(list(MyPost.objects.all().values('title', 'author__username')), cls=DjangoJSONEncoder)
-        print(sd)
         try:
             form.instance.author = ExtUser.objects.get(email=self.request.user.email)
         except ExtUser.DoesNotExist:
@@ -114,6 +118,8 @@ class CreateMyPost(CreateView):
         self.send_mail_confirm(form)
         return super(CreateMyPost, self).form_valid(form)
 
+    def get_success_url(self):
+        return reverse('user_post_list')
 
 class DetailMyPost(DetailView):
     model = MyPost
@@ -173,22 +179,29 @@ class MinusToPost(TemplateView):
         return HttpResponse(post.rate)
 
 
-def post_list_sort(request):
-    #print(hello)    
+def post_list_sort(request):    
     if request.is_ajax():
         field = request.GET['field']
         order = request.GET['order']
         
-        #print(category)
+        
         try:
-            category = request.GET['category'].split('#')[1]
-        except IndexError:
+            category = request.GET['category']   
+        except Exception:
             category = '-1'
             
         if category!='-1':
             queryset = MyPost.objects.get_published_posts().filter(category__pk=category)
         else:
             queryset = MyPost.objects.get_published_posts()
+            
+        try:
+            search = request.GET['search']
+            queryset = queryset.filter(Q(title__icontains=search)|
+                                       Q(description__icontains=search)|
+                                       Q(text__icontains=search))
+        except Exception:
+            queryset = queryset
         
         if field == 'author':
             if order == 'asc':
@@ -222,38 +235,6 @@ def confirm_account(request, key):
     user.save()
     return redirect('/')
     
-    
-@login_required
-def post_new(request):
-    if request.method == "POST":
-        form = PostForm(request.POST)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.author = request.user
-            #post.published_date = timezone.now()
-            post.save()
-            return redirect('blog.views.post_detail', pk=post.pk)
-    else:
-        form = PostForm()
-    return render(request, 'blog/post_edit.html', {'form':form})
-
-
-@login_required
-def post_edit(request, pk):
-    post = get_object_or_404(MyPost, pk=pk)
-    if request.method == "POST":
-        form = PostForm(request.POST, instance=post)
-        if form.is_valid():
-            post = form.save(commit=False)
-            #post.author = request.user
-            #post.published_date = timezone.now()
-            post.save()
-            return redirect('blog.views.post_detail', pk=post.pk)
-    else:
-        form = PostForm(instance=post)
-    return render(request, 'blog/post_edit.html', {'form':form})
-
-
 
 @login_required
 def post_remove(request, pk):

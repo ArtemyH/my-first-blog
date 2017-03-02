@@ -1,13 +1,28 @@
 function sort(cat){
+        var params = get_params();
+        //alert(params['search']);
+        //alert($('#search').val());
+        $('#search').val(params['search']);
+        //alert($('#search').val());
+        var search = params['search'];
+        if (search == ""){
+            
+        };
+    
         var field = $("#field").val();
         var order = $("#order").val();
-        var category = cat;
-        if (cat == undefined){
-            var category = window.location.href;
-            //alert('cat ' + window.location.href);
-        }
         
-      $.get('/sort/', {field: field, order: order, category: category}, function(data){
+        if (cat == undefined){
+            var category = window.location.href.split('#')[1];
+        }else{
+            var category = cat.split('#')[1];
+        };
+    
+        if (category == undefined){
+            category = '-1';
+        };
+    
+      $.get('/sort/', {field: field, order: order, category: category, search: search}, function(data){
           var json_data = JSON.parse(data)
           
           var formatter = new Intl.DateTimeFormat("en", {
@@ -36,20 +51,54 @@ function sort(cat){
     
 
     function set_active_nav_link(){
+        
+        var url = window.location.href.split('#')[1];
+        if (url == undefined){
+            url = '#-1';
+        };
+        //alert(url);
+        
         $('.nav-link').each(function(){
             //alert($(this).attr('href') + '  ==  ' + window.location.href);
-               if ('http://127.0.0.1:8000/'+$(this).attr('href') == window.location.href){                    
-                   $(this).parent().addClass('active'); 
-               } else {
-                   $(this).parent().removeClass('active');
-               };
-           });        
+           
+
+           if ($(this).attr('href') == url){
+               //alert($(this).attr('href'));
+               $(this).parent().addClass('active'); 
+               flag_active = true
+           } else {
+               $(this).parent().removeClass('active');
+               //alert('else'+$(this).attr('href'));
+           };
+       });   
     };
 
-    $(document).ready(sort());
-    $(document).ready(set_active_nav_link());
+
+    function get_params(){
+        var params = window
+        .location
+        .search
+        .replace('?','')
+        .split('#')[0]
+        .split('&')
+        .reduce(
+            function(p,e){
+                var a = e.split('=');
+                p[ decodeURIComponent(a[0])] = decodeURIComponent(a[1]);
+                return p;
+        },
+        {}
+    );
+        return params;
+    }
+
+    //$(document).ready(sort());
+    //$(document).ready(set_active_nav_link());
 
     $(document).ready(function(){
+        
+        set_active_nav_link();
+        sort();
         
         
        $('.nav-link').click(function(){
@@ -57,7 +106,6 @@ function sort(cat){
                $(this).parent().removeClass('active');
            });                  
            
-           $('.data-category').data['cat'] = this;
            $(this).parent().addClass('active');
            sort(this.href);
        });

@@ -67,8 +67,18 @@
                 
             </ul>
             <ul class="nav navbar-nav navbar-right">
+                 <li><form role="search" class="navbar-form pull-right form-inline" method="GET" action="/">
+                  
+                    <input id="search" name="search" type="text" class="span2" placeholder="Поиск">
+                        <button class="btn btn-info" type="submit">
+                          <i class="glyphicon glyphicon-search"></i>
+                        </button>
+                  
+                 </form></li>
                 {% if user.is_authenticated %}
-                <li margin-right="20px" ><a href="{% url 'logout' %}">Выход</a></li>
+               
+                <li><a href="{% url 'logout' %}">Выход</a></li>
+                 
                 {% else %}
                 <li><a href="{% url 'register' %}">Регистрация</a></li>
                 <form method="POST" class="navbar-form pull-right form-inline" action="{% url 'login' %}">
@@ -78,6 +88,7 @@
                   <button type="submit" class="btn ">Войти</button>
                 </form>
                 {% endif %}
+                
                
             </ul>
         </div>
