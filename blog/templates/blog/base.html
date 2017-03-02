@@ -50,24 +50,22 @@
         <div class="collapse navbar-collapse navbar-menubuilder">
             <ul class="nav navbar-nav navbar-left">
                 {% if user.is_authenticated %}
+                {% if user.extuser %}
                 <li class="dropdown">
                   <a id="drop2" href="#" class="dropdown-toggle" data-toggle="dropdown">
                     Профиль
                     <span class="caret"></span>
                   </a>
+                    
                   <ul class="dropdown-menu">
                     <li><a href="{% url 'profile' pk=user.extuser.pk %}">Личные данные</a></li>
                     <li><a href="{% url 'user_post_list' %}">Список публикаций</a></li>
                   </ul>
+                    {% endif %}
                 </li>
                 <li><a href="{% url 'users_list' %}">Список пользователей</a></li>
-                
-                {% endif %}
-                
-                
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-                 <li><form role="search" class="navbar-form pull-right form-inline" method="GET" action="/">
+                {% else %}
+                <li><form role="search" class="navbar-form pull-left form-inline" method="GET" action="/">
                   
                     <input id="search" name="search" type="text" class="span2" placeholder="Поиск">
                         <button class="btn btn-info" type="submit">
@@ -75,18 +73,33 @@
                         </button>
                   
                  </form></li>
+                {% endif %}
+                
+                
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                 
                 {% if user.is_authenticated %}
+                <li><form role="search" class="navbar-form pull-right form-inline" method="GET" action="/">
+                  
+                    <input id="search" name="search" type="text" class="span2" placeholder="Поиск">
+                        <button class="btn btn-info" type="submit">
+                          <i class="glyphicon glyphicon-search"></i>
+                        </button>
+                  
+                 </form></li>
                
                 <li><a href="{% url 'logout' %}">Выход</a></li>
                  
                 {% else %}
                 <li><a href="{% url 'register' %}">Регистрация</a></li>
-                <form method="POST" class="navbar-form pull-right form-inline" action="{% url 'login' %}">
+                <li><form method="POST" class="navbar-form pull-right form-inline" action="{% url 'login' %}">
                   {% csrf_token %}
                   <input class="span2" placeholder="email" type="text" name='email'>
                   <input class="span2" placeholder="password" type="password" name="password">
                   <button type="submit" class="btn ">Войти</button>
-                </form>
+                    </form></li>
+                
                 {% endif %}
                 
                
